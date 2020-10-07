@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "OPCUA Server",
+            "name": "OPCUA Server Sample",
             "console": "integratedTerminal",
             "program": "${workspaceFolder}/src/index.ts",
             "protocol": "inspector",

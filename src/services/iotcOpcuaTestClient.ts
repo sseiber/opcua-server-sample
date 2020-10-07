@@ -29,9 +29,9 @@ export class IotcOpcuaTestClient {
         // this.client = new OPCUAClient();
     }
 
-    public async connect(): Promise<void> {
+    public async connect(applicationName: string, endpoint: string): Promise<void> {
         const options = {
-            applicationName: 'Woodshop',
+            applicationName,
             connectionStrategy: {
                 initialDelay: 1000,
                 maxRetry: 1
@@ -43,10 +43,8 @@ export class IotcOpcuaTestClient {
 
         this.client = OPCUAClient.create(options);
 
-        await this.client.connect('opc.tcp://Scotts-MBPro16.local:4334/UA/Factory_001');
-    }
+        await this.client.connect(endpoint);
 
-    public async createSession(): Promise<void> {
         this.session = await this.client.createSession();
     }
 
@@ -88,27 +86,11 @@ export class IotcOpcuaTestClient {
             }
         };
 
-        const status = await this.session.write(writeOptions);
+        await this.session.write(writeOptions);
     }
 
     public async startTests(opcDeviceMap: Map<string, IOpcDeviceInfo>): Promise<void> {
         this.log(['IotcOpcuaServer', 'info'], `Starting device simulated data generation`);
-
-        const options = {
-            applicationName: 'Woodshop',
-            connectionStrategy: {
-                initialDelay: 1000,
-                maxRetry: 1
-            },
-            securityMode: MessageSecurityMode.None,
-            securityPolicy: SecurityPolicy.None,
-            endpoint_must_exist: false
-        };
-
-        const client = OPCUAClient.create(options);
-
-        await client.connect('opc.tcp://Scotts-MBPro16.local:4334/UA/Factory_001');
-        const clientSession = await client.createSession();
 
         // const foo = await client.readValue('ns=1;g=191da776-a38b-45cc-88fe-cb17f39d8944');
         // const foo = await client.readValue('ns=1;i=1002');
@@ -129,6 +111,9 @@ export class IotcOpcuaTestClient {
 
                         this.log(['IotcOpcuaServer', 'info'], `setValueFromSource: ${newValue}`);
                         variableInfo.value = newValue;
+
+                        // This method is documented as working to set a variable directly from the server.
+                        // However, I found it doesn't actually set the value.
                         // variableInfo.variable.setValueFromSource(
                         //     {
                         //         dataType: variableInfo.dataType,
@@ -137,6 +122,9 @@ export class IotcOpcuaTestClient {
                         //     StatusCodes.Good,
                         //     new Date()
                         // );
+
+                        // Instead of using the setValueFromSource method above, this code uses it's own
+                        // Client interface to set the values. This seems to work.
                         const writeOptions: WriteValueOptions = {
                             nodeId: new NodeId(NodeIdType.NUMERIC, variableInfo.variable.nodeId.value, 1),
                             attributeId: AttributeIds.Value,
@@ -148,10 +136,7 @@ export class IotcOpcuaTestClient {
                             }
                         };
 
-                        const status = await clientSession.write(writeOptions);
-
-                        const foo2 = await variableInfo.variable.readValueAsync(null);
-                        this.log(['IotcOpcuaServer', 'info'], `re-readValue result: ${foo2.value.value}`);
+                        await this.session.write(writeOptions);
 
                         this.log(['IotcOpcuaServer', 'info'], `New variable id: ${variableInfo.variable.nodeId.value}, value: ${newValue}`);
                     }

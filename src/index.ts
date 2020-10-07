@@ -31,6 +31,7 @@ async function start() {
 
         server.log(['startup', 'info'], `Server endpoint: ${server.getEndpoint()}`);
 
+        await testClient.connect('Woodshop', 'opc.tcp://Scotts-MBPro16.local:4334/UA/Factory_001');
         await testClient.startTests(deviceConfig);
     }
     catch (ex) {
