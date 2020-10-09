@@ -9,7 +9,7 @@ import {
     NodeId,
     NodeIdType
 } from 'node-opcua';
-import { IOpcDeviceInfo } from './iotcOpcuaServer';
+import { IOpcDeviceInfo } from './IotcOpcuaTestServer';
 
 export class IotcOpcuaTestClient {
     private client: OPCUAClient;
@@ -90,7 +90,7 @@ export class IotcOpcuaTestClient {
     }
 
     public async startTests(opcDeviceMap: Map<string, IOpcDeviceInfo>): Promise<void> {
-        this.log(['IotcOpcuaServer', 'info'], `Starting device simulated data generation`);
+        this.log(['IotcOpcuaTestServer', 'info'], `Starting device simulated data generation`);
 
         // const foo = await client.readValue('ns=1;g=191da776-a38b-45cc-88fe-cb17f39d8944');
         // const foo = await client.readValue('ns=1;i=1002');
@@ -107,9 +107,9 @@ export class IotcOpcuaTestClient {
                         const newValue = (Math.abs(variableInfo.highValue - variableInfo.lowValue) / 2) * Math.sin(Date.now() + step);
 
                         const foo = await variableInfo.variable.readValueAsync(null);
-                        this.log(['IotcOpcuaServer', 'info'], `readValue result: ${foo.value.value}`);
+                        this.log(['IotcOpcuaTestServer', 'info'], `readValue result: ${foo.value.value}`);
 
-                        this.log(['IotcOpcuaServer', 'info'], `setValueFromSource: ${newValue}`);
+                        this.log(['IotcOpcuaTestServer', 'info'], `setValueFromSource: ${newValue}`);
                         variableInfo.value = newValue;
 
                         // This method is documented as working to set a variable directly from the server.
@@ -138,7 +138,7 @@ export class IotcOpcuaTestClient {
 
                         await this.session.write(writeOptions);
 
-                        this.log(['IotcOpcuaServer', 'info'], `New variable id: ${variableInfo.variable.nodeId.value}, value: ${newValue}`);
+                        this.log(['IotcOpcuaTestServer', 'info'], `New variable id: ${variableInfo.variable.nodeId.value}, value: ${newValue}`);
                     }
                 }
             }
@@ -146,7 +146,7 @@ export class IotcOpcuaTestClient {
     }
 
     public async stopTests() {
-        this.log(['IotcOpcuaServer', 'info'], `Stopping device simulated data generation`);
+        this.log(['IotcOpcuaTestServer', 'info'], `Stopping device simulated data generation`);
 
         clearTimeout(this.testInterval);
     }

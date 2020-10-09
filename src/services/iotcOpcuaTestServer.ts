@@ -10,6 +10,7 @@ import {
 } from 'node-opcua';
 import * as fse from 'fs-extra';
 import { resolve as pathResolve } from 'path';
+import { IAppConfig } from '..';
 
 export interface IOpcDeviceInfo {
     device: UAObject;
@@ -24,56 +25,55 @@ export interface IOpcVariable {
     highValue: any;
 }
 
-export class IotcOpcuaServer {
+export class IotcOpcuaTestServer {
+    private app: IAppConfig;
     private systemConfig: any;
-    private server: OPCUAServer;
+    private opcuaServer: OPCUAServer;
     private addressSpace: AddressSpace;
     private localServerNamespace: Namespace;
-
     private opcDeviceMap: Map<string, IOpcDeviceInfo> = new Map<string, IOpcDeviceInfo>();
 
-    public log(tags: any, message: any) {
-        const tagsMessage = (tags && Array.isArray(tags)) ? `[${tags.join(', ')}]` : '[]';
-
-        // tslint:disable-next-line:no-console
-        console.log(`[${new Date().toTimeString()}] [${tagsMessage}] ${message}`);
+    constructor(app: IAppConfig) {
+        this.app = app;
     }
 
     public async initialize(): Promise<any> {
-        this.log(['IotcOpcuaServer', 'info'], `Instantiating opcua server`);
 
-        const systemConfigPath = pathResolve(process.env.CONTENT_ROOT, 'systemConfig.json');
-        this.systemConfig = fse.readJSONSync(systemConfigPath);
+        return this.opcDeviceMap;
+    }
 
-        this.server = new OPCUAServer(this.systemConfig.server);
+    public async start(): Promise<void> {
+        this.app.log(['IotcOpcuaTestServer', 'info'], `Instantiating opcua server`);
+
+        this.opcuaServer = new OPCUAServer(this.systemConfig.server);
 
         await new Promise((resolve) => {
-            this.server.initialize(() => {
+            this.opcuaServer.initialize(() => {
                 return resolve();
             });
         });
 
         await this.configureDevices();
 
-        return this.opcDeviceMap;
-    }
-
-    public async start(): Promise<void> {
         await new Promise((resolve) => {
-            this.server.start(() => {
+            this.opcuaServer.start(() => {
                 return resolve();
             });
         });
 
-        this.log(['IotcOpcuaServer', 'info'], `Server started listening on port: ${this.server.endpoints[0].port}`);
+        this.app.log(['IotcOpcuaTestServer', 'info'], `Server started listening on port: ${this.opcuaServer.endpoints[0].port}`);
+    }
+
+    public async stop(): Promise<void> {
+        await this.opcuaServer.shutdown(10 * 1000);
     }
 
     public getEndpoint(): string {
-        return this.server.endpoints[0].endpointDescriptions()[0].endpointUrl;
+        return this.opcuaServer.endpoints[0].endpointDescriptions()[0].endpointUrl;
     }
 
     private async configureDevices(): Promise<void> {
-        this.addressSpace = this.server.engine.addressSpace;
+        this.addressSpace = this.opcuaServer.engine.addressSpace;
         this.localServerNamespace = this.addressSpace.getOwnNamespace();
 
         for (const deviceConfig of this.systemConfig.devices) {
