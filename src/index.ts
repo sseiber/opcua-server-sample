@@ -1,4 +1,5 @@
-import { IotcOpcuaTestServer } from './services/IotcOpcuaTestServer';
+import { IotcOpcuaTestServer } from './services/iotcOpcuaTestServer';
+import { IotcOpcuaTestClient } from './services/iotcOpcuaTestClient';
 import { forget } from './utils';
 import * as fse from 'fs-extra';
 import { resolve as pathResolve } from 'path';
@@ -6,12 +7,14 @@ import { resolve as pathResolve } from 'path';
 export interface IAppConfig {
     serverConfig: any;
     server: IotcOpcuaTestServer;
+    client: IotcOpcuaTestClient;
     log: (tags: any, message: any) => void;
 }
 
 const app: IAppConfig = {
     serverConfig: {},
     server: null,
+    client: null,
     log: (tags: any, message: any) => {
         const tagsMessage = (tags && Array.isArray(tags)) ? `[${tags.join(', ')}]` : '[]';
 
@@ -36,7 +39,7 @@ async function start() {
         process.on('SIGTERM', stopServer);
 
         const systemConfigPath = pathResolve(process.env.CONTENT_ROOT, 'systemConfig.json');
-        this.systemConfig = fse.readJSONSync(systemConfigPath);
+        app.serverConfig = fse.readJSONSync(systemConfigPath);
 
         app.server = new IotcOpcuaTestServer(app);
 
@@ -47,8 +50,10 @@ async function start() {
 
         app.log(['startup', 'info'], `Server endpoint: ${app.server.getEndpoint()}`);
 
-        await testClient.connect('Woodshop', 'opc.tcp://Scotts-MBPro16.local:4334/UA/Factory_001');
-        await testClient.startTests(deviceConfig);
+        app.client = new IotcOpcuaTestClient(app);
+
+        await app.client.connect();
+        await app.client.startTests();
     }
     catch (ex) {
         // tslint:disable-next-line:no-console

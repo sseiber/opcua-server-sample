@@ -1,4 +1,4 @@
-import { IotcOpcuaTestServer } from './IotcOpcuaTestServer';
+import { IotcOpcuaTestServer } from './iotcOpcuaTestServer';
 import { IotcOpcuaTestClient } from './iotcOpcuaTestClient';
 
 export {

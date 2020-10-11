@@ -7,31 +7,33 @@ import {
     DataType,
     WriteValueOptions,
     NodeId,
-    NodeIdType
+    NodeIdType,
+    BrowseDirection,
+    NodeClass
 } from 'node-opcua';
-import { IOpcDeviceInfo } from './IotcOpcuaTestServer';
+import { IAppConfig } from '..';
+import { bind } from '../utils';
+
+interface NodeInfo {
+    browseName: string;
+    nodeId: NodeId;
+    nodeClass: NodeClass;
+}
 
 export class IotcOpcuaTestClient {
-    private client: OPCUAClient;
+    private app: IAppConfig;
+    private opcuaClient: OPCUAClient;
     private session: ClientSession;
     private testInterval: NodeJS.Timeout;
+    private allAssetVariableNodes: NodeInfo[] = [];
 
-    public log(tags: any, message: any) {
-        const tagsMessage = (tags && Array.isArray(tags)) ? `[${tags.join(', ')}]` : '[]';
-
-        // tslint:disable-next-line:no-console
-        console.log(`[${new Date().toTimeString()}] [${tagsMessage}] ${message}`);
+    constructor(app: IAppConfig) {
+        this.app = app;
     }
 
-    public async initialize(): Promise<void> {
-        this.log(['IotcOpcuaTestClient', 'info'], `Instantiating opcua client`);
-
-        // this.client = new OPCUAClient();
-    }
-
-    public async connect(applicationName: string, endpoint: string): Promise<void> {
+    public async connect(): Promise<void> {
         const options = {
-            applicationName,
+            applicationName: this.app.serverConfig?.server?.buildInfo?.productName || '',
             connectionStrategy: {
                 initialDelay: 1000,
                 maxRetry: 1
@@ -41,26 +43,15 @@ export class IotcOpcuaTestClient {
             endpoint_must_exist: false
         };
 
-        this.client = OPCUAClient.create(options);
+        this.opcuaClient = OPCUAClient.create(options);
 
-        await this.client.connect(endpoint);
+        const opcuaEndpoint = `opc.tcp://localhost:${this.app.serverConfig?.server?.port || 4334}${this.app.serverConfig?.server?.resourcePath || '/'}`;
 
-        this.session = await this.client.createSession();
-    }
+        this.app.log(['IotcOpcuaTestClient', 'info'], `Client test endpoint: ${opcuaEndpoint}`);
 
-    public async browseServer(): Promise<any> {
-        const browseResult = await this.session.browse('RootFolder');
-        for (const reference of browseResult.references) {
-            this.log(['IotcOpcuaTestClient', 'info'], `  -> ${reference.browseName.toString()}`);
-        }
+        await this.opcuaClient.connect(opcuaEndpoint);
 
-        // const browseResult2 = await this.session.browse({
-        //     nodeId: new NodeId(NodeIdType.NUMERIC, 2253, 0),
-        //     nodeClassMask: NodeClass.Variable,
-        //     resultMask: 63
-        // });
-
-        return browseResult;
+        this.session = await this.opcuaClient.createSession();
     }
 
     public async readValue(nodeId: string): Promise<any> {
@@ -73,7 +64,7 @@ export class IotcOpcuaTestClient {
     }
 
     public async writeValue(nodeId: number, dataType: DataType, newValue: any): Promise<void> {
-        this.log(['IotcOpcuaTestClient', 'info'], `Write value: ${newValue}`);
+        this.app.log(['IotcOpcuaTestClient', 'info'], `Write value: ${newValue}`);
 
         const writeOptions: WriteValueOptions = {
             nodeId: new NodeId(NodeIdType.NUMERIC, nodeId, 1),
@@ -89,65 +80,165 @@ export class IotcOpcuaTestClient {
         await this.session.write(writeOptions);
     }
 
-    public async startTests(opcDeviceMap: Map<string, IOpcDeviceInfo>): Promise<void> {
-        this.log(['IotcOpcuaTestServer', 'info'], `Starting device simulated data generation`);
+    public async startTests(): Promise<void> {
+        this.app.log(['IotcOpcuaTestServer', 'info'], `Starting device simulated data generation`);
 
         // const foo = await client.readValue('ns=1;g=191da776-a38b-45cc-88fe-cb17f39d8944');
         // const foo = await client.readValue('ns=1;i=1002');
         // await client.writeValue('ns=1;i=1011', 50.1);
         // const bar = await client.readValue('ns=1;i=1011');
+        // const foo = await variableInfo.variable.readValueAsync(null);
 
-        this.testInterval = setInterval(async () => {
-            for (const deviceItem of opcDeviceMap) {
-                for (const variableItem of deviceItem[1].variables) {
-                    const variableInfo = variableItem[1];
-                    const step = Math.abs(variableInfo.highValue - variableInfo.lowValue) * 0.000133333;
+        this.allAssetVariableNodes = await this.getAllAssetVariables();
 
-                    if (variableInfo.dataType >= DataType.Int16 && variableInfo.dataType <= DataType.Double) {
-                        const newValue = (Math.abs(variableInfo.highValue - variableInfo.lowValue) / 2) * Math.sin(Date.now() + step);
-
-                        const foo = await variableInfo.variable.readValueAsync(null);
-                        this.log(['IotcOpcuaTestServer', 'info'], `readValue result: ${foo.value.value}`);
-
-                        this.log(['IotcOpcuaTestServer', 'info'], `setValueFromSource: ${newValue}`);
-                        variableInfo.value = newValue;
-
-                        // This method is documented as working to set a variable directly from the server.
-                        // However, I found it doesn't actually set the value.
-                        // variableInfo.variable.setValueFromSource(
-                        //     {
-                        //         dataType: variableInfo.dataType,
-                        //         value: newValue
-                        //     },
-                        //     StatusCodes.Good,
-                        //     new Date()
-                        // );
-
-                        // Instead of using the setValueFromSource method above, this code uses it's own
-                        // Client interface to set the values. This seems to work.
-                        const writeOptions: WriteValueOptions = {
-                            nodeId: new NodeId(NodeIdType.NUMERIC, variableInfo.variable.nodeId.value, 1),
-                            attributeId: AttributeIds.Value,
-                            value: {
-                                value: {
-                                    dataType: variableInfo.dataType,
-                                    value: newValue
-                                }
-                            }
-                        };
-
-                        await this.session.write(writeOptions);
-
-                        this.log(['IotcOpcuaTestServer', 'info'], `New variable id: ${variableInfo.variable.nodeId.value}, value: ${newValue}`);
-                    }
-                }
-            }
-        }, 3 * 1000);
+        // await this.updateVariables();
+        this.testInterval = setInterval(this.updateVariables, 3 * 1000);
     }
 
     public async stopTests() {
-        this.log(['IotcOpcuaTestServer', 'info'], `Stopping device simulated data generation`);
+        this.app.log(['IotcOpcuaTestServer', 'info'], `Stopping device simulated data generation`);
 
         clearTimeout(this.testInterval);
+    }
+
+    @bind
+    private async updateVariables() {
+        try {
+            for (const variableNode of this.allAssetVariableNodes) {
+                const variableDataType = await this.session.getBuiltInDataType(variableNode.nodeId);
+
+                if (variableDataType >= DataType.Int16 && variableDataType <= DataType.Double) {
+                    const variableInfo = this.app.server.GetOpcVariableMap.get(variableNode.nodeId.value.toString());
+                    // const currentValue = await this.session.readVariableValue(variableNode.nodeId);
+                    const newValue = Math.abs(variableInfo.highValue - variableInfo.lowValue) * Math.cos(Date.now());
+
+                    this.app.log(['IotcOpcuaTestServer', 'info'], `Set new value: Node: ${variableNode.nodeId.value}, value: ${newValue}`);
+
+                    // Instead of using the setValueFromSource method above, this code uses it's own
+                    // Client interface to set the values. This seems to work.
+                    const writeOptions: WriteValueOptions = {
+                        nodeId: variableNode.nodeId,
+                        attributeId: AttributeIds.Value,
+                        value: {
+                            value: {
+                                dataType: variableDataType,
+                                value: newValue
+                            }
+                        }
+                    };
+
+                    await this.session.write(writeOptions);
+                }
+            }
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestServer', 'error'], `Error during test interval: ${ex.message}`);
+        }
+    }
+
+    private async getAllAssetVariables(): Promise<NodeInfo[]> {
+        let allAssetVariableNodes = [];
+        try {
+            const objectNodeInfo = {
+                browseName: 'Objects',
+                nodeId: new NodeId(NodeIdType.NUMERIC, 85, 0),
+                nodeClass: 1
+            };
+
+            const assetNodes: NodeInfo[] = [];
+            const objectNodes = await this.expandNode(objectNodeInfo.nodeId);
+            for (const objectNode of objectNodes) {
+                if (objectNode.browseName === 'Aliases' || objectNode.browseName === 'Server') {
+                    continue;
+                }
+
+                assetNodes.push(objectNode);
+            }
+
+            allAssetVariableNodes = await this.enumerateAssetNodes(assetNodes);
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestClient', 'error'], `Exception while reading NodeId: ${ex.message}`);
+        }
+
+        return allAssetVariableNodes;
+    }
+
+    private async enumerateAssetNodes(nodes: NodeInfo[]): Promise<NodeInfo[]> {
+        this.app.log(['IotcOpcuaTestClient', 'info'], `nodes: ${nodes.length}`);
+
+        let newNodes: NodeInfo[] = [];
+
+        for (const node of nodes) {
+            newNodes = newNodes.concat(await this.expandNode(node.nodeId));
+        }
+
+        if (newNodes.length > 0) {
+            return newNodes.concat(await this.enumerateAssetNodes(newNodes));
+        }
+
+        return newNodes;
+    }
+
+    private async expandNode(rootNodeId: NodeId): Promise<NodeInfo[]> {
+        const childNodes: NodeInfo[] = [];
+
+        try {
+            const nodesToBrowse = [
+                {
+                    nodeId: rootNodeId,
+                    referenceTypeId: 'Organizes',
+                    includeSubtypes: true,
+                    browseDirection: BrowseDirection.Forward,
+                    resultMask: 0x3f
+                },
+                {
+                    nodeId: rootNodeId,
+                    referenceTypeId: 'Aggregates',
+                    includeSubtypes: true,
+                    browseDirection: BrowseDirection.Forward,
+                    resultMask: 0x3f
+
+                },
+                {
+                    nodeId: rootNodeId,
+                    referenceTypeId: 'HasSubtype',
+                    includeSubtypes: true,
+                    browseDirection: BrowseDirection.Forward,
+                    resultMask: 0x3f
+                }
+            ];
+
+            const browseRefs = await this.session.browse(nodesToBrowse);
+
+            for (const ref of browseRefs[0]?.references) {
+                childNodes.push({
+                    browseName: ref.browseName.toString(),
+                    nodeId: ref.nodeId,
+                    nodeClass: ref.nodeClass as number
+                });
+            }
+
+            for (const ref of browseRefs[1]?.references) {
+                childNodes.push({
+                    browseName: ref.browseName.toString(),
+                    nodeId: ref.nodeId,
+                    nodeClass: ref.nodeClass as number
+                });
+            }
+
+            for (const ref of browseRefs[2]?.references) {
+                childNodes.push({
+                    browseName: ref.browseName.toString(),
+                    nodeId: ref.nodeId,
+                    nodeClass: ref.nodeClass as number
+                });
+            }
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestClient', 'error'], `Exception while reading NodeId: ${ex.message}`);
+        }
+
+        return childNodes;
     }
 }
