@@ -80,7 +80,16 @@ export class IotcOpcuaTestServer {
     }
 
     public getEndpoint(): string {
-        return this.opcuaServer.endpoints[0].endpointDescriptions()[0].endpointUrl;
+        let endpoint = '';
+
+        try {
+            endpoint = this.opcuaServer?.endpoints[0]?.endpointDescriptions()[0]?.endpointUrl;
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestServer', 'error'], `Error getting server endpoint - may be another running instance at this port: ${this.app.serverConfig?.server?.port}`);
+        }
+
+        return endpoint;
     }
 
     private async configureDevices(): Promise<void> {
