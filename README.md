@@ -53,3 +53,21 @@ This project is written in NodeJS and TypeScript implements a OPCUA server using
   ```
   npm version patch
   ```
+## Run the project in VS Code
+From VS Code you can simply hit F5 to run and debug the source code.
+
+## Run the Docker container
+To run the docker container you need to specific where your configuration files are in the `docker run` command. Here is an example command:
+```
+docker run \
+    --name opcua-server \
+    -d \
+    --rm \
+    -v <PATH_TO_OPCUA_CONFIG_FILES_ON_HOST>:/data/storage \
+    -p 4334:4334 \
+    <YOUR_CONTAINER_REGISTRY>/iotc-opcua-server:latest-amd64
+```
+To see the command running you can view the docker container logs with:
+```
+docker logs -f --tail 200 opcua-server
+```
