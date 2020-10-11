@@ -1,0 +1,147 @@
+{
+    "displayName": "Hydrolic pump",
+    "name": "hydrolic_pump_001",
+    "id": "d3d46a09-59b4-4898-a3eb-adff64507804",
+    "tags": [
+        {
+            "displayName": "Ambient pressure",
+            "name": "a_pressure",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 10,
+            "lowValue": 10,
+            "highValue": 35
+        },
+        {
+            "displayName": "Ambient temperature",
+            "name": "a_temperature",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Ambient humidity",
+            "name": "a_humidity",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Magnetic heading",
+            "name": "mag_heading",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 10,
+            "lowValue": 10,
+            "highValue": 35
+        },
+        {
+            "displayName": "Latitude",
+            "name": "latitude",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Longitude",
+            "name": "longitude",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Main shaft bearing temperature",
+            "name": "main_sh_bearing_temp",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 10,
+            "lowValue": 10,
+            "highValue": 35
+        },
+        {
+            "displayName": "Vibration",
+            "name": "vibration",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 10,
+            "lowValue": 10,
+            "highValue": 35
+        },
+        {
+            "displayName": "Oil pressure",
+            "name": "o_pressure",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 10,
+            "lowValue": 10,
+            "highValue": 35
+        },
+        {
+            "displayName": "Oil Temperature",
+            "name": "o_temperature",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Exhause gas temperature",
+            "name": "ex_gas_temp",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Temperature",
+            "name": "tempurature",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Intake pressure ratio",
+            "name": "intake_pressure_r",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 35.2,
+            "lowValue": 35.2,
+            "highValue": 110.4
+        },
+        {
+            "displayName": "Manifold pressure",
+            "name": "man_pressure",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 10,
+            "lowValue": 10,
+            "highValue": 35
+        }
+    ]
+}

@@ -46,10 +46,6 @@ function start() {
         configDirDst = path.resolve(workspaceRootFolder, `configs`);
         configFileDst = path.resolve(configDirDst, `local.json`);
         createDevConfiguration(path.resolve(workspaceRootFolder, `setup`, `local.json`), configDirDst, configFileDst);
-
-        configDirDst = path.resolve(workspaceRootFolder, `storage`);
-        configFileDst = path.resolve(configDirDst, `state.json`);
-        createDevConfiguration(path.resolve(workspaceRootFolder, `setup`, `state.json`), configDirDst, configFileDst);
     } catch (e) {
         setupFailed = true;
     } finally {

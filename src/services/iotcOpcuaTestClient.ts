@@ -24,7 +24,8 @@ export class IotcOpcuaTestClient {
     private app: IAppConfig;
     private opcuaClient: OPCUAClient;
     private session: ClientSession;
-    private testInterval: NodeJS.Timeout;
+    private testIntervalId: NodeJS.Timeout;
+    private testInterval: number = 3 * 1000;
     private allAssetVariableNodes: NodeInfo[] = [];
 
     constructor(app: IAppConfig) {
@@ -32,26 +33,31 @@ export class IotcOpcuaTestClient {
     }
 
     public async connect(): Promise<void> {
-        const options = {
-            applicationName: this.app.serverConfig?.server?.buildInfo?.productName || '',
-            connectionStrategy: {
-                initialDelay: 1000,
-                maxRetry: 1
-            },
-            securityMode: MessageSecurityMode.None,
-            securityPolicy: SecurityPolicy.None,
-            endpoint_must_exist: false
-        };
+        try {
+            const options = {
+                applicationName: this.app.serverConfig?.server?.buildInfo?.productName || '',
+                connectionStrategy: {
+                    initialDelay: 1000,
+                    maxRetry: 1
+                },
+                securityMode: MessageSecurityMode.None,
+                securityPolicy: SecurityPolicy.None,
+                endpoint_must_exist: false
+            };
 
-        this.opcuaClient = OPCUAClient.create(options);
+            this.opcuaClient = OPCUAClient.create(options);
 
-        const opcuaEndpoint = `opc.tcp://localhost:${this.app.serverConfig?.server?.port || 4334}${this.app.serverConfig?.server?.resourcePath || '/'}`;
+            const opcuaEndpoint = `opc.tcp://localhost:${this.app.serverConfig?.server?.port || 4334}${this.app.serverConfig?.server?.resourcePath || '/'}`;
 
-        this.app.log(['IotcOpcuaTestClient', 'info'], `Client test endpoint: ${opcuaEndpoint}`);
+            this.app.log(['IotcOpcuaTestClient', 'info'], `Connecting client to test server endpoint: ${opcuaEndpoint}`);
+            await this.opcuaClient.connect(opcuaEndpoint);
 
-        await this.opcuaClient.connect(opcuaEndpoint);
-
-        this.session = await this.opcuaClient.createSession();
+            this.app.log(['IotcOpcuaTestClient', 'info'], `Creating client session...`);
+            this.session = await this.opcuaClient.createSession();
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestClient', 'error'], `Error while creating client connection to test server endpoing: ${ex.message}`);
+        }
     }
 
     public async readValue(nodeId: string): Promise<any> {
@@ -81,24 +87,29 @@ export class IotcOpcuaTestClient {
     }
 
     public async startTests(): Promise<void> {
-        this.app.log(['IotcOpcuaTestServer', 'info'], `Starting device simulated data generation`);
+        try {
+            // const foo = await client.readValue('ns=1;g=191da776-a38b-45cc-88fe-cb17f39d8944');
+            // const foo = await client.readValue('ns=1;i=1002');
+            // await client.writeValue('ns=1;i=1011', 50.1);
+            // const bar = await client.readValue('ns=1;i=1011');
+            // const foo = await variableInfo.variable.readValueAsync(null);
 
-        // const foo = await client.readValue('ns=1;g=191da776-a38b-45cc-88fe-cb17f39d8944');
-        // const foo = await client.readValue('ns=1;i=1002');
-        // await client.writeValue('ns=1;i=1011', 50.1);
-        // const bar = await client.readValue('ns=1;i=1011');
-        // const foo = await variableInfo.variable.readValueAsync(null);
+            this.app.log(['IotcOpcuaTestServer', 'info'], `Reading node tree from RootFolder/Objects/...`);
+            this.allAssetVariableNodes = await this.getAllAssetVariables();
 
-        this.allAssetVariableNodes = await this.getAllAssetVariables();
-
-        // await this.updateVariables();
-        this.testInterval = setInterval(this.updateVariables, 3 * 1000);
+            this.app.log(['IotcOpcuaTestServer', 'info'], `Starting test intervals with frequency: ${this.testInterval} milliseconds`);
+            // await this.updateVariables();
+            this.testIntervalId = setInterval(this.updateVariables, this.testInterval);
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestServer', 'error'], `Error while configuring client tests: ${ex.message}`);
+        }
     }
 
     public async stopTests() {
         this.app.log(['IotcOpcuaTestServer', 'info'], `Stopping device simulated data generation`);
 
-        clearTimeout(this.testInterval);
+        clearTimeout(this.testIntervalId);
     }
 
     @bind
@@ -138,6 +149,7 @@ export class IotcOpcuaTestClient {
 
     private async getAllAssetVariables(): Promise<NodeInfo[]> {
         let allAssetVariableNodes = [];
+
         try {
             const objectNodeInfo = {
                 browseName: 'Objects',

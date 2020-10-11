@@ -1,0 +1,137 @@
+{
+    "displayName": "Conveyor vehicle",
+    "name": "conveyor_vehicle_001",
+    "id": "921d7872-5a93-440d-a3a7-cf19b4dfd205",
+    "tags": [
+        {
+            "displayName": "Engine load",
+            "name": "engine_load",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0,
+            "lowValue": 0,
+            "highValue": 100
+        },
+        {
+            "displayName": "Engine coolant temperature",
+            "name": "engine_coolant_temp",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 20.0,
+            "lowValue": -40.0,
+            "highValue": 215.0
+        },
+        {
+            "displayName": "Fuel pressure",
+            "name": "fuel_pressure",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0.0,
+            "lowValue": 0.0,
+            "highValue": 765.0
+        },
+        {
+            "displayName": "Intake manifold ABS pressure",
+            "name": "intake_man_abs_pressure",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0.0,
+            "lowValue": 0.0,
+            "highValue": 255.0
+        },
+        {
+            "displayName": "Engine speed",
+            "name": "engine_speed",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0.0,
+            "lowValue": 0.0,
+            "highValue": 16383.75
+        },
+        {
+            "displayName": "Vehicle speed",
+            "name": "vehicle_speed",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0,
+            "lowValue": 0,
+            "highValue": 255
+        },
+        {
+            "displayName": "Timing advance",
+            "name": "timing_adv",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0.0,
+            "lowValue": -64.0,
+            "highValue": 63.5
+        },
+        {
+            "displayName": "Intake air pressure",
+            "name": "intake_air_pressure",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0,
+            "lowValue": -40,
+            "highValue": 215
+        },
+        {
+            "displayName": "Evap System Vapor Pressure",
+            "name": "evap_sys_vap_pressure",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0,
+            "lowValue": -8192.0,
+            "highValue": 8191.75
+        },
+        {
+            "displayName": "Oxygen Sensor 1",
+            "name": "ox_sensor_1",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0,
+            "lowValue": -128,
+            "highValue": 127
+        },
+        {
+            "displayName": "Oxygen sensor 2",
+            "name": "ox_sensor_2",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 0,
+            "lowValue": -128,
+            "highValue": 127
+        },
+        {
+            "displayName": "Catalyst Temperature",
+            "name": "catalyst_temp",
+            "dataType": "Float",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 70.0,
+            "lowValue": -40.0,
+            "highValue": 6513.5
+        },
+        {
+            "displayName": "Engine oil temperature",
+            "name": "engine_oil_temp",
+            "dataType": "Int32",
+            "type": "Variable",
+            "sampleInterval": 0,
+            "value": 40,
+            "lowValue": -40,
+            "highValue": 210
+        }
+   ]
+}

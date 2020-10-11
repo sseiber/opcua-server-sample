@@ -8,6 +8,7 @@ export interface IAppConfig {
     serverConfig: any;
     server: IotcOpcuaTestServer;
     client: IotcOpcuaTestClient;
+    storageRootDirectory: string;
     log: (tags: any, message: any) => void;
 }
 
@@ -15,6 +16,7 @@ const app: IAppConfig = {
     serverConfig: {},
     server: null,
     client: null,
+    storageRootDirectory: '',
     log: (tags: any, message: any) => {
         const tagsMessage = (tags && Array.isArray(tags)) ? `[${tags.join(', ')}]` : '[]';
 
@@ -26,6 +28,11 @@ const app: IAppConfig = {
 async function start() {
     try {
         const stopServer = async () => {
+            if (app.client) {
+                app.log(['shutdown', 'info'], '☮︎ Stopping opcua client');
+                await app.client.stopTests();
+            }
+
             if (app.server) {
                 app.log(['shutdown', 'info'], '☮︎ Stopping opcua server');
                 await app.server.stop();
@@ -38,18 +45,22 @@ async function start() {
         process.on('SIGINT', stopServer);
         process.on('SIGTERM', stopServer);
 
-        const systemConfigPath = pathResolve(process.env.CONTENT_ROOT, 'systemConfig.json');
+        app.storageRootDirectory = process.env.CONTENT_ROOT || '/data/storage';
+
+        app.log(['startup', 'info'], `Loading configuration files...`);
+        const systemConfigPath = pathResolve(app.storageRootDirectory, 'systemConfig.json');
         app.serverConfig = fse.readJSONSync(systemConfigPath);
 
+        app.log(['startup', 'info'], `Initializing server...`);
         app.server = new IotcOpcuaTestServer(app);
 
-        app.log(['startup', 'info'], `Starting server`);
         await app.server.start();
 
         app.log(['startup', 'info'], `Server started ( press CTRL+C to stop)`);
 
         app.log(['startup', 'info'], `Server endpoint: ${app.server.getEndpoint()}`);
 
+        app.log(['startup', 'info'], `Starting client test...`);
         app.client = new IotcOpcuaTestClient(app);
 
         await app.client.connect();

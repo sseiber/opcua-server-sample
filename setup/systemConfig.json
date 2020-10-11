@@ -1,0 +1,22 @@
+{
+    "server": {
+        "port": 4334,
+        "resourcePath": "/UA/Factory_001",
+        "buildInfo": {
+            "productName": "IotcOpcuaTestServer",
+            "manufacturerName": "Microsoft",
+            "softwareVersion": "20200930-0001",
+            "buildNumber": "0001"
+        }
+    },
+    "devices": [
+        {
+            "name": "Hydrolic pump",
+            "configName": "hydrolic_pump.json"
+        },
+        {
+            "name": "Conveyor Vehicle",
+            "configName": "conveyor_vehicle.json"
+        }
+    ]
+}

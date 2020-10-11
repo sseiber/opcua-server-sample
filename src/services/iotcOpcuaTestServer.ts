@@ -49,23 +49,30 @@ export class IotcOpcuaTestServer {
     public async start(): Promise<void> {
         this.app.log(['IotcOpcuaTestServer', 'info'], `Instantiating opcua server`);
 
-        this.opcuaServer = new OPCUAServer(this.app.serverConfig.server);
+        try {
+            this.opcuaServer = new OPCUAServer(this.app.serverConfig.server);
 
-        await new Promise((resolve) => {
-            this.opcuaServer.initialize(() => {
-                return resolve();
+            await new Promise((resolve) => {
+                this.opcuaServer.initialize(() => {
+                    return resolve();
+                });
             });
-        });
 
-        await this.configureDevices();
+            this.app.log(['IotcOpcuaTestServer', 'info'], `Processing server configuration...`);
+            await this.configureDevices();
 
-        await new Promise((resolve) => {
-            this.opcuaServer.start(() => {
-                return resolve();
+            this.app.log(['IotcOpcuaTestServer', 'info'], `Starting server...`);
+            await new Promise((resolve) => {
+                this.opcuaServer.start(() => {
+                    return resolve();
+                });
             });
-        });
 
-        this.app.log(['IotcOpcuaTestServer', 'info'], `Server started listening on port: ${this.opcuaServer.endpoints[0].port}`);
+            this.app.log(['IotcOpcuaTestServer', 'info'], `Server started listening on port: ${this.opcuaServer.endpoints[0].port}`);
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestServer', 'error'], `Error during server startup: ${ex.message}`);
+        }
     }
 
     public async stop(): Promise<void> {
@@ -77,38 +84,43 @@ export class IotcOpcuaTestServer {
     }
 
     private async configureDevices(): Promise<void> {
-        this.addressSpace = this.opcuaServer.engine.addressSpace;
-        this.localServerNamespace = this.addressSpace.getOwnNamespace();
+        try {
+            this.addressSpace = this.opcuaServer.engine.addressSpace;
+            this.localServerNamespace = this.addressSpace.getOwnNamespace();
 
-        for (const deviceConfig of this.app.serverConfig.devices) {
-            const deviceConfigPath = pathResolve(process.env.CONTENT_ROOT, deviceConfig.configName);
-            const deviceConfigData = fse.readJSONSync(deviceConfigPath);
-            const deviceVariables: Map<string, IOpcVariable> = new Map<string, IOpcVariable>();
+            for (const deviceConfig of this.app.serverConfig.devices) {
+                const deviceConfigPath = pathResolve(this.app.storageRootDirectory, deviceConfig.configName);
+                const deviceConfigData = fse.readJSONSync(deviceConfigPath);
+                const deviceVariables: Map<string, IOpcVariable> = new Map<string, IOpcVariable>();
 
-            const opcDevice = await this.addDevice(deviceConfigData.name);
+                const opcDevice = await this.addDevice(deviceConfigData.name);
 
-            for (const tag of deviceConfigData.tags) {
-                const opcVariable: IOpcVariable = {
-                    variable: undefined,
-                    dataType: tag.dataType,
-                    sampleInterval: tag.sampleInterval || 0,
-                    value: tag.value,
-                    lowValue: tag.lowValue,
-                    highValue: tag.highValue
+                for (const tag of deviceConfigData.tags) {
+                    const opcVariable: IOpcVariable = {
+                        variable: undefined,
+                        dataType: tag.dataType,
+                        sampleInterval: tag.sampleInterval || 0,
+                        value: tag.value,
+                        lowValue: tag.lowValue,
+                        highValue: tag.highValue
+                    };
+
+                    opcVariable.variable = await this.createDeviceVariable(opcDevice, tag.name, tag.dataType, tag.sampleInterval, opcVariable.value);
+
+                    deviceVariables.set(tag.name, opcVariable);
+                    this.opcVariableMap.set(opcVariable.variable.nodeId.value.toString(), opcVariable);
+                }
+
+                const opcDeviceInfo: IOpcDeviceInfo = {
+                    device: opcDevice,
+                    variables: deviceVariables
                 };
 
-                opcVariable.variable = await this.createDeviceVariable(opcDevice, tag.name, tag.dataType, tag.sampleInterval, opcVariable.value);
-
-                deviceVariables.set(tag.name, opcVariable);
-                this.opcVariableMap.set(opcVariable.variable.nodeId.value.toString(), opcVariable);
+                this.opcDeviceMap.set(deviceConfigData.name, opcDeviceInfo);
             }
-
-            const opcDeviceInfo: IOpcDeviceInfo = {
-                device: opcDevice,
-                variables: deviceVariables
-            };
-
-            this.opcDeviceMap.set(deviceConfigData.name, opcDeviceInfo);
+        }
+        catch (ex) {
+            this.app.log(['IotcOpcuaTestServer', 'error'], `Error while processing server configuration (adding variables): ${ex.message}`);
         }
     }
 
