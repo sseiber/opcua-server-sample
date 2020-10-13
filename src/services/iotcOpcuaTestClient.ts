@@ -9,15 +9,19 @@ import {
     NodeId,
     NodeIdType,
     BrowseDirection,
-    NodeClass
+    NodeClass,
+    StatusCode,
+    StatusCodes
 } from 'node-opcua';
 import { IAppConfig } from '..';
 import { bind } from '../utils';
 
 interface NodeInfo {
-    browseName: string;
     nodeId: NodeId;
-    nodeClass: NodeClass;
+    browseName: string;
+    description: string;
+    dataType: string;
+    nodeClass: string;
 }
 
 export class IotcOpcuaTestClient {
@@ -226,24 +230,43 @@ export class IotcOpcuaTestClient {
             for (const ref of browseRefs[0]?.references) {
                 childNodes.push({
                     browseName: ref.browseName.toString(),
+                    description: '',
                     nodeId: ref.nodeId,
-                    nodeClass: ref.nodeClass as number
+                    dataType: 'Null',
+                    nodeClass: NodeClass[ref.nodeClass as number]
                 });
             }
 
             for (const ref of browseRefs[1]?.references) {
+                let description = '';
+                let dataType = DataType.Null;
+                const nodesToRead = [
+                    { nodeId: ref.nodeId, attributeId: AttributeIds.DataType },
+                    { nodeId: ref.nodeId, attributeId: AttributeIds.Description }
+                ];
+                const nodeAttributes = await this.session.read(nodesToRead);
+                if (nodeAttributes[0].statusCode === StatusCodes.Good) {
+                    dataType = nodeAttributes[0].value.value.value;
+                }
+                if (nodeAttributes[1].statusCode === StatusCodes.Good) {
+                    description = nodeAttributes[1].value.value.text;
+                }
                 childNodes.push({
                     browseName: ref.browseName.toString(),
+                    description,
                     nodeId: ref.nodeId,
-                    nodeClass: ref.nodeClass as number
+                    dataType: DataType[dataType],
+                    nodeClass: NodeClass[ref.nodeClass as number]
                 });
             }
 
             for (const ref of browseRefs[2]?.references) {
                 childNodes.push({
                     browseName: ref.browseName.toString(),
+                    description: '',
                     nodeId: ref.nodeId,
-                    nodeClass: ref.nodeClass as number
+                    dataType: 'Null',
+                    nodeClass: NodeClass[ref.nodeClass as number]
                 });
             }
         }

@@ -45,7 +45,7 @@ This project is written in NodeJS and TypeScript implements a OPCUA server using
   ```
   npm run dockerbuild
   ```
-* After successfully building the docker image you can push the docker image to your container registry (the same container registry you specified in the `./storage/deployment.amd64.json` file):
+* After successfully building the docker image you can push the docker image to your container registry:
   ```
   npm run dockerpush
   ```

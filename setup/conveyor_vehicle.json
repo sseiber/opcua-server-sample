@@ -6,6 +6,7 @@
         {
             "displayName": "Engine load",
             "name": "engine_load",
+            "description": "Calculated engine load",
             "dataType": "Int32",
             "type": "Variable",
             "sampleInterval": 0,
@@ -16,6 +17,7 @@
         {
             "displayName": "Engine coolant temperature",
             "name": "engine_coolant_temp",
+            "description": "Engine coolant temperature",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -26,6 +28,7 @@
         {
             "displayName": "Fuel pressure",
             "name": "fuel_pressure",
+            "description": "Fuel pressure (guage pressure)",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -36,6 +39,7 @@
         {
             "displayName": "Intake manifold ABS pressure",
             "name": "intake_man_abs_pressure",
+            "description": "Intake manifold absolute pressure",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -46,6 +50,7 @@
         {
             "displayName": "Engine speed",
             "name": "engine_speed",
+            "description": "Engine speed",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -56,6 +61,7 @@
         {
             "displayName": "Vehicle speed",
             "name": "vehicle_speed",
+            "description": "Vehicle speed",
             "dataType": "Int32",
             "type": "Variable",
             "sampleInterval": 0,
@@ -66,6 +72,7 @@
         {
             "displayName": "Timing advance",
             "name": "timing_adv",
+            "description": "Timing advance",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -76,6 +83,7 @@
         {
             "displayName": "Intake air pressure",
             "name": "intake_air_pressure",
+            "description": "Intake air pressure",
             "dataType": "Int32",
             "type": "Variable",
             "sampleInterval": 0,
@@ -86,6 +94,7 @@
         {
             "displayName": "Evap System Vapor Pressure",
             "name": "evap_sys_vap_pressure",
+            "description": "Evap System Vapor Pressure",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -96,6 +105,7 @@
         {
             "displayName": "Oxygen Sensor 1",
             "name": "ox_sensor_1",
+            "description": "Short term fuel trim",
             "dataType": "Int32",
             "type": "Variable",
             "sampleInterval": 0,
@@ -106,6 +116,7 @@
         {
             "displayName": "Oxygen sensor 2",
             "name": "ox_sensor_2",
+            "description": "Short term fuel trim",
             "dataType": "Int32",
             "type": "Variable",
             "sampleInterval": 0,
@@ -116,6 +127,7 @@
         {
             "displayName": "Catalyst Temperature",
             "name": "catalyst_temp",
+            "description": "Catalyst Temperature: Bank 1, Sensor 1",
             "dataType": "Float",
             "type": "Variable",
             "sampleInterval": 0,
@@ -126,6 +138,7 @@
         {
             "displayName": "Engine oil temperature",
             "name": "engine_oil_temp",
+            "description": "Engine Oil Temperature",
             "dataType": "Int32",
             "type": "Variable",
             "sampleInterval": 0,

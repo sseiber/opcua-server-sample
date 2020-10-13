@@ -19,7 +19,6 @@ export interface IOpcDeviceInfo {
 
 export interface IOpcVariable {
     variable: UAVariable;
-    dataType: DataType;
     sampleInterval: number;
     value: any;
     lowValue: any;
@@ -107,14 +106,13 @@ export class IotcOpcuaTestServer {
                 for (const tag of deviceConfigData.tags) {
                     const opcVariable: IOpcVariable = {
                         variable: undefined,
-                        dataType: tag.dataType,
                         sampleInterval: tag.sampleInterval || 0,
                         value: tag.value,
                         lowValue: tag.lowValue,
                         highValue: tag.highValue
                     };
 
-                    opcVariable.variable = await this.createDeviceVariable(opcDevice, tag.name, tag.dataType, tag.sampleInterval, opcVariable.value);
+                    opcVariable.variable = await this.createDeviceVariable(opcDevice, tag.name, tag.description, tag.dataType, tag.sampleInterval, opcVariable.value);
 
                     deviceVariables.set(tag.name, opcVariable);
                     this.opcVariableMap.set(opcVariable.variable.nodeId.value.toString(), opcVariable);
@@ -141,11 +139,12 @@ export class IotcOpcuaTestServer {
         });
     }
 
-    private async createDeviceVariable(device: UAObject, name: string, dataType: DataType, sampleInterval: number, varRef: any): Promise<UAVariable> {
+    private async createDeviceVariable(device: UAObject, name: string, description: string, dataType: DataType, sampleInterval: number, varRef: any): Promise<UAVariable> {
         return this.localServerNamespace.addVariable({
             componentOf: device,
             browseName: name,
             displayName: name,
+            description,
             dataType,
             minimumSamplingInterval: sampleInterval,
             value: {
