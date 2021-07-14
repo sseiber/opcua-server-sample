@@ -53,9 +53,12 @@ export class IotcOpcuaTestServer {
 
             await new Promise((resolve) => {
                 this.opcuaServer.initialize(() => {
-                    return resolve();
+                    return resolve('');
                 });
             });
+
+            this.addressSpace = this.opcuaServer.engine.addressSpace;
+            this.localServerNamespace = this.addressSpace.getOwnNamespace();
 
             this.app.log(['IotcOpcuaTestServer', 'info'], `Processing server configuration...`);
             await this.configureDevices();
@@ -63,7 +66,7 @@ export class IotcOpcuaTestServer {
             this.app.log(['IotcOpcuaTestServer', 'info'], `Starting server...`);
             await new Promise((resolve) => {
                 this.opcuaServer.start(() => {
-                    return resolve();
+                    return resolve('');
                 });
             });
 

@@ -46,7 +46,7 @@ export class IotcOpcuaTestClient {
                 },
                 securityMode: MessageSecurityMode.None,
                 securityPolicy: SecurityPolicy.None,
-                endpoint_must_exist: false
+                endpointMustExist: false
             };
 
             this.opcuaClient = OPCUAClient.create(options);
@@ -126,6 +126,7 @@ export class IotcOpcuaTestClient {
                     const variableInfo = this.app.server.GetOpcVariableMap.get(variableNode.nodeId.value.toString());
                     // const currentValue = await this.session.readVariableValue(variableNode.nodeId);
                     const newValue = Math.abs(variableInfo.highValue - variableInfo.lowValue) * Math.cos(Date.now());
+                    // const newValue = 0;
 
                     this.app.log(['IotcOpcuaTestServer', 'info'], `Set new value: Node: ${variableNode.nodeId.value}, value: ${newValue}`);
 
