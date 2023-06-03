@@ -1,4 +1,4 @@
-FROM amd64/node:13-slim
+FROM amd64/node:16-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     net-tools \
@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV WORKINGDIR /app
 WORKDIR ${WORKINGDIR}
 
+ADD scripts ${WORKINGDIR}/scripts
 ADD package.json ${WORKINGDIR}/package.json
 ADD tslint.json ${WORKINGDIR}/tslint.json
 ADD tsconfig.json ${WORKINGDIR}/tsconfig.json
@@ -29,6 +30,6 @@ HEALTHCHECK \
     --retries=3 \
     CMD curl -f http://localhost:9072/health || exit 1
 
-EXPOSE 9072
+EXPOSE 4334
 
 CMD ["node", "./dist/index"]
